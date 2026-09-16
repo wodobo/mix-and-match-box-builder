@@ -1,0 +1,55 @@
+{
+  "apiVersion": 3,
+  "name": "picky-plate/box-builder",
+  "version": "1.0.4",
+  "title": "Mix & Match Box Builder",
+  "category": "woocommerce",
+  "icon": "screenoptions",
+  "description": "Places the Wodobo Labs presentation layer for a native WooCommerce Mix & Match product.",
+  "textdomain": "picky-plate-box-builder",
+  "attributes": {
+    "desktopColumns": {
+      "type": "number",
+      "default": 3
+    },
+    "tabletColumns": {
+      "type": "number",
+      "default": 2
+    },
+    "mobileColumns": {
+      "type": "number",
+      "default": 2
+    },
+    "showFilters": {
+      "type": "boolean",
+      "default": true
+    },
+    "showDetails": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "supports": {
+    "align": [
+      "wide",
+      "full"
+    ],
+    "anchor": true,
+    "color": {
+      "background": true,
+      "text": true,
+      "gradients": true
+    },
+    "spacing": {
+      "margin": true,
+      "padding": true,
+      "blockGap": true
+    },
+    "typography": {
+      "fontSize": true,
+      "lineHeight": true
+    },
+    "html": false
+  },
+  "editorScript": "ppbb-block-editor"
+}

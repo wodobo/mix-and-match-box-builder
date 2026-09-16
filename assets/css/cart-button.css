@@ -1,0 +1,51 @@
+/**
+ * Presentation of the native Woo Mix & Match "Edit selections" link.
+ * Supports both WooCommerce classic cart markup and the Cart Block markup.
+ * The link, edit URL and purchase handling remain entirely native.
+ * Selectors target the actual action without requiring classic Cart body classes.
+ * Themes can override --ppbb-cart-edit-* without editing plugin files.
+ */
+a.button.edit_container_in_cart_text,
+.wc-block-cart-items__row.is-mnm-container a.wc-block-cart-item__edit-link {
+	display: inline-flex !important;
+	align-items: center !important;
+	justify-content: center !important;
+	width: auto !important;
+	min-width: 0 !important;
+	min-height: 40px !important;
+	margin: 0 !important;
+	padding: .7em 1.25em !important;
+	border: 1px solid transparent !important;
+	border-radius: var(--ppbb-cart-edit-radius, var(--button-border-radius, 999px)) !important;
+	background: var(--ppbb-cart-edit-bg, var(--accentPrimary, var(--wp--preset--color--primary, #303030))) !important;
+	color: var(--ppbb-cart-edit-fg, #ffffff) !important;
+	font-size: .875rem !important;
+	font-weight: 600 !important;
+	line-height: 1.2 !important;
+	text-align: center !important;
+	text-decoration: none !important;
+	opacity: 1 !important;
+	box-shadow: none !important;
+	cursor: pointer;
+}
+
+a.button.edit_container_in_cart_text:hover,
+a.button.edit_container_in_cart_text:focus-visible,
+.wc-block-cart-items__row.is-mnm-container a.wc-block-cart-item__edit-link:hover,
+.wc-block-cart-items__row.is-mnm-container a.wc-block-cart-item__edit-link:focus-visible {
+	border-color: transparent !important;
+	background: var(--ppbb-cart-edit-hover-bg, var(--accentDark, var(--wp--preset--color--contrast, #202020))) !important;
+	color: var(--ppbb-cart-edit-hover-fg, #ffffff) !important;
+	text-decoration: none !important;
+}
+
+a.button.edit_container_in_cart_text:focus-visible,
+.wc-block-cart-items__row.is-mnm-container a.wc-block-cart-item__edit-link:focus-visible {
+	outline: 2px solid currentColor;
+	outline-offset: 3px;
+}
+
+/* Mix & Match outputs line breaks inside the Cart Block action link. */
+.wc-block-cart-items__row.is-mnm-container a.wc-block-cart-item__edit-link br {
+	display: none !important;
+}
