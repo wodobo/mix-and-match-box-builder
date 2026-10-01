@@ -1,7 +1,7 @@
 {
   "apiVersion": 3,
   "name": "picky-plate/box-builder",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "title": "Mix & Match Box Builder",
   "category": "woocommerce",
   "icon": "screenoptions",

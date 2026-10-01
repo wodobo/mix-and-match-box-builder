@@ -16,4 +16,4 @@ Version 1.0.5 and later use WordPress's native plugin update interface to check 
 
 ## Publishing releases
 
-For a release such as `v1.0.6`, attach the tested WordPress-installable binary named exactly `mix-and-match-box-builder-by-wodobo-labs-1.0.6.zip` to the GitHub Release. Do not upload a production site backup, WordPress configuration, database, credentials or customer information.
+For a release such as `v1.0.8`, attach the tested WordPress-installable binary named exactly `mix-and-match-box-builder-by-wodobo-labs-1.0.8.zip` to the GitHub Release. Do not upload a production site backup, WordPress configuration, database, credentials or customer information.

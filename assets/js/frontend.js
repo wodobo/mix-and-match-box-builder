@@ -344,26 +344,87 @@
 		}
 	}
 
+	function effectivePriceHtml(priceHtml) {
+		if (!priceHtml) { return ''; }
+
+		var $price = $('<div></div>').html(priceHtml);
+		var $amounts = $price.find('.woocommerce-Price-amount.amount');
+		if (!$amounts.length) { return ''; }
+
+		// Before a Mix & Match configuration has been calculated, Woo may leave the
+		// product's min/max price range in the native option. Never mistake that
+		// range for the configured box total. Once Woo/APFS calculates the box it
+		// replaces this with the actual current amount.
+		var hasRange = $price.find('.screen-reader-text').filter(function () {
+			return /price range/i.test($(this).text());
+		}).length > 0;
+		if (hasRange) { return ''; }
+
+		// Woo may render regular + sale values. The final amount is the effective
+		// amount Woo itself is presenting, so mirror that rather than recalculating.
+		var $effective = $price.find('ins .woocommerce-Price-amount.amount').last();
+		if (!$effective.length) { $effective = $amounts.last(); }
+		return $('<div></div>').append($effective.clone()).html();
+	}
+
+	function nativeEffectivePriceHtml(option) {
+		return option ? effectivePriceHtml(option.priceHtml) : '';
+	}
+
+	function priceHtmlLooksZero(priceHtml) {
+		if (!priceHtml) { return false; }
+		var shown = text(priceHtml).replace(/\s+/g, ' ').trim();
+		var zero = text(formatPrice(0)).replace(/\s+/g, ' ').trim();
+		return shown === zero;
+	}
+
+	function officialSubscriptionPriceHtml($form, option) {
+		if (!option) { return ''; }
+		var prices = $form.data('ppbb-native-subscription-prices') || {};
+		var eventPriceHtml = prices[option.value] ? effectivePriceHtml(prices[option.value]) : '';
+		if (eventPriceHtml) { return eventPriceHtml; }
+		return nativeEffectivePriceHtml(option);
+	}
+
 	function purchaseDisplayData($form, api, options) {
 		var oneTime = options.filter(function (option) { return option.isOneTime; })[0] || null;
 		var subscriptions = options.filter(function (option) { return !option.isOneTime; });
 		var activeValue = activePurchaseValue($form) || '0';
 		var selectedSubscriptionValue = preferredSubscriptionValue($form, subscriptions);
 		var selectedSubscription = subscriptions.filter(function (option) { return option.value === selectedSubscriptionValue; })[0] || subscriptions[0] || null;
-		var total = Number(api.get_container_price('price') || 0);
 		var activeSubscription = subscriptions.filter(function (option) { return option.value === activeValue; })[0] || null;
-		var oneTimeTotal = total;
-		var subscriptionTotal = total;
+		var total = Number(api.get_container_price('price') || 0);
+		var basePriceHtml = formatPrice(total);
+		var oneTimePriceHtml = nativeEffectivePriceHtml(oneTime) || basePriceHtml;
+		var subscriptionPriceHtml = officialSubscriptionPriceHtml($form, selectedSubscription);
 
-		// APFS's MNM integration may already have applied the selected percentage
-		// discount to the live container price. Reconstruct the one-time total for
-		// display so both purchase types can show the current configured box price.
-		if (activeSubscription && activeSubscription.discount > 0 && activeSubscription.discount < 100) {
-			oneTimeTotal = total / (1 - activeSubscription.discount / 100);
+		// First choice: mirror the exact price HTML emitted by the official
+		// Mix & Match + Subscriptions/APFS compatibility event. Some grouped
+		// subscription layouts leave a $0.00 parent/container amount in the hidden
+		// option DOM even though APFS has calculated the configured box price.
+		// If that happens, use a presentation-only fallback for the simple native
+		// "inherit + percentage discount" plan type. This never writes a price back
+		// into WooCommerce and never changes cart/checkout/renewal calculations.
+		if (!subscriptionPriceHtml || (total > 0 && priceHtmlLooksZero(subscriptionPriceHtml))) {
+			var selectedScheme = selectedSubscription && selectedSubscription.scheme ? selectedSubscription.scheme : null;
+			var selectedDiscount = selectedSubscription ? Number(selectedSubscription.discount || 0) : 0;
+
+			if (total === 0) {
+				subscriptionPriceHtml = basePriceHtml;
+			} else if (selectedScheme && selectedScheme.pricing_mode === 'inherit' && selectedDiscount > 0) {
+				subscriptionPriceHtml = formatPrice(total * (1 - selectedDiscount / 100));
+			} else if (selectedScheme && !selectedScheme.has_price_filter) {
+				subscriptionPriceHtml = oneTimePriceHtml;
+			} else {
+				subscriptionPriceHtml = '&mdash;';
+			}
 		}
-		if (selectedSubscription && activeValue === '0' && selectedSubscription.discount > 0) {
-			subscriptionTotal = total * (1 - selectedSubscription.discount / 100);
+
+		var activeSubscriptionPriceHtml = officialSubscriptionPriceHtml($form, activeSubscription);
+		if (!activeSubscriptionPriceHtml || (total > 0 && priceHtmlLooksZero(activeSubscriptionPriceHtml))) {
+			activeSubscriptionPriceHtml = subscriptionPriceHtml;
 		}
+		var currentPriceHtml = activeValue !== '0' ? activeSubscriptionPriceHtml : oneTimePriceHtml;
 
 		var discounts = subscriptions.map(function (option) { return option.discount || 0; });
 		var commonDiscount = discounts.length && discounts.every(function (discount) { return discount === discounts[0]; }) ? discounts[0] : 0;
@@ -378,8 +439,9 @@
 			activeValue: activeValue,
 			selectedSubscriptionValue: selectedSubscriptionValue,
 			selectedSubscription: selectedSubscription,
-			oneTimeTotal: oneTimeTotal,
-			subscriptionTotal: subscriptionTotal,
+			oneTimePriceHtml: oneTimePriceHtml,
+			subscriptionPriceHtml: subscriptionPriceHtml,
+			currentPriceHtml: currentPriceHtml,
 			subscribeLabel: subscribeLabel
 		};
 	}
@@ -429,7 +491,7 @@
 		$wrap.append($message);
 
 		var $total = $('<div class="ppbb-total-row"><span>Box total</span><strong class="ppbb-total"></strong></div>');
-		$total.find('.ppbb-total').html(formatPrice(total));
+		$total.find('.ppbb-total').html(purchaseData.currentPriceHtml || formatPrice(total));
 		$wrap.append($total);
 
 		if (purchaseData.oneTime && purchaseData.subscriptions.length) {
@@ -445,7 +507,7 @@
 			$oneTimeLabel.append($oneTimeRadio);
 			var $oneTimeCopy = $('<span class="ppbb-purchase-copy"><strong class="ppbb-purchase-label"></strong><span class="ppbb-purchase-price"></span></span>');
 			$oneTimeCopy.find('.ppbb-purchase-label').text(ppbbSettings.i18n.oneTime || 'One-time purchase');
-			$oneTimeCopy.find('.ppbb-purchase-price').html(formatPrice(purchaseData.oneTimeTotal));
+			$oneTimeCopy.find('.ppbb-purchase-price').html(purchaseData.oneTimePriceHtml || formatPrice(total));
 			$oneTimeLabel.append($oneTimeCopy);
 			$purchase.append($oneTimeLabel);
 
@@ -456,7 +518,7 @@
 			var $subscribeCopy = $('<span class="ppbb-purchase-copy"><strong class="ppbb-purchase-label"></strong><span class="ppbb-purchase-price"></span></span>');
 			$subscribeCopy.find('.ppbb-purchase-label').text(purchaseData.subscribeLabel);
 			var frequencyText = purchaseData.selectedSubscription ? purchaseData.selectedSubscription.frequency : '';
-			var subscribePrice = formatPrice(purchaseData.subscriptionTotal);
+			var subscribePrice = purchaseData.subscriptionPriceHtml || '&mdash;';
 			$subscribeCopy.find('.ppbb-purchase-price').html(subscribePrice + (frequencyText ? ' · ' + $('<div>').text(frequencyText).html() : ''));
 			$subscribeLabel.append($subscribeCopy);
 			$purchase.append($subscribeLabel);
@@ -655,7 +717,8 @@
 			if (typeof window.ResizeObserver !== 'function') { measureStickyHeight(); }
 			ui.$drawerContent.empty().append(summaryMarkup(items, apiObj.api, $form, true, options));
 			ui.$mobileBar.find('.ppbb-mobile-count').text(progressLabel(apiObj.api));
-			ui.$mobileBar.find('.ppbb-mobile-total').html(formatPrice(total));
+			var mobilePurchaseData = purchaseDisplayData($form, apiObj.api, getPurchaseOptions($form));
+			ui.$mobileBar.find('.ppbb-mobile-total').html(mobilePurchaseData.currentPriceHtml || formatPrice(total));
 			ui.$mobileBar.find('.ppbb-mobile-action').text(ppbbSettings.i18n.viewBox || 'View Box');
 			ui.$mobileBar.toggleClass('is-ready', valid);
 
@@ -765,14 +828,19 @@
 			setTimeout(renderAll, 0);
 		});
 
-		// Mix & Match's official APFS compatibility updates subscription prices after
-		// the base MNM update event. Re-render only after that official calculation
-		// has completed so our UI displays the current configured box price instead
-		// of the product's initial min/max price range.
+		// Mix & Match's official APFS compatibility owns subscription pricing.
+		// Re-render after its native events so our presentation mirrors Woo's final
+		// one-time/subscription amounts instead of calculating prices itself.
 		$form.on('wcsatt-updated-mnm-subscription-totals', function () {
 			setTimeout(renderAll, 0);
 		});
-		$form.on('wcsatt-updated-mnm-price', function () {
+		$form.on('wcsatt-updated-mnm-price', function (event, schemePriceHtml, scheme) {
+			var key = scheme && scheme.data && scheme.data.subscription_scheme ? String(scheme.data.subscription_scheme.key || '') : '';
+			if (key && schemePriceHtml) {
+				var nativePrices = $form.data('ppbb-native-subscription-prices') || {};
+				nativePrices[key] = schemePriceHtml;
+				$form.data('ppbb-native-subscription-prices', nativePrices);
+			}
 			setTimeout(renderAll, 0);
 		});
 		$form.on('change', '.wcsatt-options-product input, .wcsatt-options-prompt-action-input, .wcsatt-options-product-dropdown', function () {
