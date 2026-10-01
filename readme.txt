@@ -3,7 +3,7 @@ Contributors: wodobolabs
 Tags: woocommerce, mix and match, box builder, subscriptions, product configuration
 Requires at least: 6.2
 Requires PHP: 7.4
-Stable tag: 1.0.4
+Stable tag: 1.0.6
 
 A flexible customer-facing box builder that augments WooCommerce Mix and Match Products without replacing its commerce engine.
 
@@ -75,7 +75,26 @@ The plugin uses capability checks rather than relying only on exact version numb
 The internal plugin directory, block name, and existing PPBB setting keys are intentionally retained for upgrade continuity, so existing installations can update without losing settings or breaking previously inserted blocks.
 
 
+== GitHub updates ==
+
+Updates are offered via WordPress's native plugin-update interface from public GitHub Releases for https://github.com/wodobo/mix-and-match-box-builder.
+
+Only a published, non-prerelease GitHub Release with a matching, attached WordPress-installable ZIP will be offered. For example, release v1.0.6 must contain the binary asset mix-and-match-box-builder-by-wodobo-labs-1.0.6.zip; GitHub's automatically generated "Source code" archives are never used as the update package. The ZIP must contain the unchanged picky-plate-box-builder/ plugin directory.
+
+Version 1.0.5 introduced the GitHub updater. Install 1.0.5 or later once via Plugins > Add New > Upload Plugin > Replace current with uploaded. For later releases, publish both the updated source and the ZIP on GitHub, then use Dashboard > Updates > Check Again and click Update now. Automatic background updates are not enabled by this integration. If the GitHub API is unavailable, the installed plugin continues to run normally.
+
 == Changelog ==
+
+= 1.0.6 =
+* Fixes subscription frequency labels in the custom box summary so dynamic Mix & Match containers no longer show the parent container's $0.00 base price in delivery-frequency text. Labels now use the native subscription plan period/interval data (for example, Every week, Every 2 weeks, Every month) while WooCommerce Subscriptions remains responsible for all actual pricing and billing.
+* Corrects the Subscribe & Save percentage label so the discount displays with a single percent sign.
+* No changes to subscription pricing calculations, renewal schedules, checkout, Mix & Match validation, or payment logic.
+
+
+= 1.0.5 =
+* Adds a GitHub Releases update checker using WordPress's native Update URI API; no separate updater plugin or credentials required for the public repository.
+* Offers only the matching published release ZIP and preserves the existing plugin directory/settings. No changes to box selection, prices, cart, checkout, subscription plans, or renewals.
+
 
 = 1.0.4 =
 * Restores one natural page scroll across both desktop columns. Your Box remains sticky, but when its contents exceed the visible viewport, normal page scrolling reveals the lower content. No internal sidebar scrollbar and no wheel-event interception. Mobile drawer behavior is unchanged.

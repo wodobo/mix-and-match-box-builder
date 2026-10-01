@@ -3,7 +3,8 @@
  * Plugin Name: Mix & Match Box Builder by Wodobo Labs
  * Plugin URI:  https://wodobolabs.com/
  * Description: A flexible storefront builder that augments WooCommerce Mix and Match Products while preserving its native commerce logic. Built by Wodobo Labs, a Wodobo initiative.
- * Version:     1.0.4
+ * Version:     1.0.6
+ * Update URI: https://github.com/wodobo/mix-and-match-box-builder
  * Author:      Wodobo Labs
  * Author URI:  https://wodobolabs.com/
  * Text Domain: picky-plate-box-builder
@@ -15,10 +16,13 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'PPBB_VERSION', '1.0.4' );
+define( 'PPBB_VERSION', '1.0.6' );
 define( 'PPBB_FILE', __FILE__ );
 define( 'PPBB_PATH', plugin_dir_path( __FILE__ ) );
 define( 'PPBB_URL', plugin_dir_url( __FILE__ ) );
+
+require_once PPBB_PATH . 'includes/class-ppbb-github-updates.php';
+PPBB_GitHub_Updates::init();
 
 require_once PPBB_PATH . 'includes/class-ppbb-plugin.php';
 

@@ -10,8 +10,10 @@ A storefront presentation layer for the **official WooCommerce Mix and Match Pro
 
 Install the official WooCommerce Mix and Match Products extension and WooCommerce first. Install the packaged plugin ZIP into WordPress; keep the `picky-plate-box-builder` directory name to preserve updates and settings for existing installations.
 
-**GitHub update checks are not included in v1.0.4.** This repository hosts the source, but publishing it alone does not enable updates within WordPress. The updater will be integrated and tested in a subsequent plugin release.
+## Updates
+
+Version 1.0.5 and later use WordPress's native plugin update interface to check published releases from this public GitHub repository. Only an explicitly attached, version-matched WordPress-installable ZIP is accepted as an update package; GitHub's automatically generated source archives are not used.
 
 ## Publishing releases
 
-Attach the tested, WordPress-installable ZIP as a binary asset to a versioned GitHub Release. Do not upload a production site backup, WordPress configuration, database, credentials or customer information.
+For a release such as `v1.0.6`, attach the tested WordPress-installable binary named exactly `mix-and-match-box-builder-by-wodobo-labs-1.0.6.zip` to the GitHub Release. Do not upload a production site backup, WordPress configuration, database, credentials or customer information.

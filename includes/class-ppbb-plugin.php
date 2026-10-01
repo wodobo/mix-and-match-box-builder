@@ -965,7 +965,7 @@ final class PPBB_Plugin {
 					'itemSelected'     => __( 'item selected', 'picky-plate-box-builder' ),
 					'oneTime'          => __( 'One-time purchase', 'picky-plate-box-builder' ),
 					'subscribe'        => __( 'Subscribe', 'picky-plate-box-builder' ),
-					'subscribeSave'    => __( 'Subscribe & save %s%%', 'picky-plate-box-builder' ),
+					'subscribeSave'    => __( 'Subscribe & save %s%', 'picky-plate-box-builder' ),
 					'addBox'           => __( 'Add My Box', 'picky-plate-box-builder' ),
 					'continueBuilding' => __( 'Continue Building', 'picky-plate-box-builder' ),
 					'viewBox'          => __( 'View Box', 'picky-plate-box-builder' ),

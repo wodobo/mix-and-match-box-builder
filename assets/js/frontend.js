@@ -262,6 +262,24 @@
 		return $slots;
 	}
 
+	function subscriptionFrequencyLabel(scheme, fallback) {
+		var period = scheme && scheme.period ? String(scheme.period).toLowerCase() : '';
+		var interval = scheme && scheme.interval ? parseInt(scheme.interval, 10) : 1;
+		var periods = { day: 'day', week: 'week', month: 'month', year: 'year' };
+
+		if (periods[period]) {
+			interval = isNaN(interval) || interval < 1 ? 1 : interval;
+			return interval === 1 ? 'Every ' + periods[period] : 'Every ' + interval + ' ' + periods[period] + 's';
+		}
+
+		// Backward-compatible fallback for subscription integrations that do not
+		// expose period/interval data. Remove price/discount text from the label;
+		// WooCommerce remains the source of truth for the actual recurring amount.
+		var label = text(fallback || '');
+		label = label.replace(/\s+for\s+[^()]+(?:\s*\([^)]*\))?\s*$/i, '').trim();
+		return label;
+	}
+
 	function getPurchaseOptions($form) {
 		var options = [];
 		var $dropdown = $form.find('.wcsatt-options-product-dropdown').first();
@@ -277,7 +295,8 @@
 			var frequency = '';
 			if (!isOneTime) {
 				var $dropdownOption = $dropdown.find('option[value="' + value + '"]').first();
-				frequency = $dropdownOption.length ? text($dropdownOption.text()) : text(data.dropdown_format || $li.find('.subscription-details').first().text());
+				var nativeFrequency = $dropdownOption.length ? $dropdownOption.text() : (data.dropdown_format || $li.find('.subscription-details').first().text());
+				frequency = subscriptionFrequencyLabel(scheme, nativeFrequency);
 			}
 			var $priceNode = $li.find(isOneTime ? '.one-time-price' : '.subscription-price').first();
 			options.push({
@@ -350,7 +369,7 @@
 		var commonDiscount = discounts.length && discounts.every(function (discount) { return discount === discounts[0]; }) ? discounts[0] : 0;
 		var subscribeLabel = ppbbSettings.i18n.subscribe || 'Subscribe';
 		if (commonDiscount > 0) {
-			subscribeLabel = (ppbbSettings.i18n.subscribeSave || 'Subscribe & save %s%%').replace('%s', commonDiscount % 1 ? commonDiscount : Math.round(commonDiscount));
+			subscribeLabel = (ppbbSettings.i18n.subscribeSave || 'Subscribe & save %s%').replace('%s', commonDiscount % 1 ? commonDiscount : Math.round(commonDiscount));
 		}
 
 		return {
